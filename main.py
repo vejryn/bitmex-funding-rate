@@ -17,7 +17,7 @@ def minutes_of_new_data(symbol, data):
     if len(data) > 0:
         old = parser.parse(data['timestamp'].iloc[-1])
     elif symbol == 'XBT':
-        old = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=False, count=count).result()[0][21]['timestamp']
+        old = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=False, count=count).result()[0][22]['timestamp']
     if symbol == 'XBT':
         new = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=True, count=count).result()[0][0]['timestamp']
     return old, new
