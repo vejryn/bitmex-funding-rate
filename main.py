@@ -14,10 +14,10 @@ symbol = 'XBT'
 count = 500
 
 def minutes_of_new_data(symbol, data):
-    if len(data) < 0:
+    if len(data) > 0:
         old = parser.parse(data['timestamp'].iloc[-1])
     elif symbol == 'XBT':
-        old = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=False, count=count).result()[0][0]['timestamp']
+        old = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=False, count=count).result()[0][21]['timestamp']
     if symbol == 'XBT':
         new = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=True, count=count).result()[0][0]['timestamp']
     return old, new
@@ -26,15 +26,15 @@ def get_funding_rate(symbol):
     filename = '%s-funding-rate.csv' % (symbol)
     data_df = pd.DataFrame()
     oldest_point, newest_point = minutes_of_new_data('XBT', data_df)
-    delta_min = (newest_point - oldest_point).total_seconds()/60
-    available_data = math.ceil(delta_min/480)
-    rounds = math.ceil(available_data / count)
+    delta_period = (newest_point - oldest_point).total_seconds()/28800
+    available_data = math.ceil(delta_period)
+    rounds = math.ceil(available_data / 500)
     if rounds > 0:
         print('Downloading funding rate')
         for round_num in tqdm(range(rounds)):
             time.sleep(1)
-            new_time = (oldest_point + timedelta(minutes = round_num * count * 480))
-            data = bitmex_client.Funding.Funding_get(symbol=symbol, reverse=True, count=count, startTime = new_time).result()[0]
+            new_time = (oldest_point + timedelta(hours = round_num * 500 * 8))
+            data = bitmex_client.Funding.Funding_get(symbol=symbol, count=count, startTime = new_time).result()[0]
             temp_df = pd.DataFrame(data)
             data_df = data_df.append(temp_df)
     data_df.set_index('timestamp', inplace=True)
